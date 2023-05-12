@@ -15,6 +15,10 @@
       "day3": {
         "main": "student_wall.mo",
         "type": "motoko"
+      },
+      "day4": {
+        "main": "moto_coin.mo",
+        "type": "motoko"
       }
     }
   }
