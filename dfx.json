@@ -11,6 +11,10 @@
       "day2": {
         "main": "homework_diary.mo",
         "type": "motoko"
+      },
+      "day3": {
+        "main": "student_wall.mo",
+        "type": "motoko"
       }
     }
   }
