@@ -9,11 +9,11 @@ import Hash "mo:base/Hash";
 import Iter "mo:base/Iter";
 
 actor HomeworkDiary {
-    type Homework = {
-        titulo : Text;
-        descripcion : Text;
-        fechaVencimiento : Time.Time;
-        completado : Bool;
+    public type Homework = {
+        title : Text;
+        description : Text;
+        dueDate : Time.Time;
+        completed : Bool;
     };
 
     var homeworkId = 0;
@@ -62,10 +62,10 @@ actor HomeworkDiary {
             };
             case (?home) {
                 let new : Homework = {
-                    titulo = home.titulo;
-                    descripcion = home.descripcion;
-                    fechaVencimiento = home.fechaVencimiento;
-                    completado = true;
+                    title = home.title;
+                    description = home.description;
+                    dueDate = home.dueDate;
+                    completed = true;
                 };
                 homeworkDiary.put(id, new);
                 #ok();
@@ -95,7 +95,7 @@ actor HomeworkDiary {
     // Obtener lista de tarea listas (No completadas).
     public shared query func getPendingHomework() : async [Homework] {
         func checkCompletado(value : Homework) : Bool {
-            return value.completado;
+            return value.completed;
         };
         let filterData = Iter.filter(homeworkDiary.vals(), checkCompletado);
         return Iter.toArray(filterData);
@@ -105,7 +105,7 @@ actor HomeworkDiary {
     public shared query func searchHomework(searchTerm : Text) : async [Homework] {
         func checkSearch(value : Homework) : Bool {
             let texto : Text.Pattern = #text searchTerm;
-            return Text.contains(value.titulo, texto) or Text.contains(value.descripcion, texto);
+            return Text.contains(value.title, texto) or Text.contains(value.description, texto);
         };
         let filterData = Iter.filter(homeworkDiary.vals(), checkSearch);
         return Iter.toArray(filterData);
