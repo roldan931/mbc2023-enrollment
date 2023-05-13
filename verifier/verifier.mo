@@ -4,6 +4,8 @@ import Text "mo:base/Text";
 import Principal "mo:base/Principal";
 import HashMap "mo:base/HashMap";
 import Array "mo:base/Array";
+import ic "ic";
+import calcu "../calculator";
 actor Verifier {
     public type StudentProfile = {
         name : Text;
@@ -11,6 +13,8 @@ actor Verifier {
         graduate : Bool;
     };
     let studentProfileStore = HashMap.HashMap<Principal, StudentProfile>(1, Principal.equal, Principal.hash);
+    let invoiceManagementCanister : ic.ManagementCanister = actor ("2222s-4iaaa-aaaaf-ax2uq-cai");
+    let invoiceCalculator : calcu.Calculator = actor (calcu.Calculator);
 
     public shared ({ caller }) func addMyProfile(profile : StudentProfile) : async Result.Result<(), Text> {
         studentProfileStore.put(caller, profile);
@@ -55,22 +59,20 @@ actor Verifier {
     };
 
     public shared func test(canisterId : Principal) : async TestResult {
-        switch (canisterId) {
-            case (?value) {
-                #ok();
-            };
-            case (_) {
-                UnexpectedError "1";
-            };
-            case (null) {
-                #UnexpectedValue "2";
-            };
+        await invoiceCalculator.reset();
+        let num = await invoiceCalculator.add();
+        if (num == 1) {
+            #ok();
+        } else if (num > 1) {
+            #UnexpectedValue "2";
+        } else {
+            UnexpectedError "1";
         };
     };
 
     //Parte 3
     public shared func verifyOwnership(canisterId : Principal, principalId : Principal) : async Bool {
-        let canister = await ManagementCanister.canister_status(canisterId);
+        let canister = await invoiceManagementCanister.canister_status(canisterId);
         let principal = Array.find(canister.settings.controllers, func x = Principal.equal(x, principalId));
         switch (principal) {
             case (?value) {
