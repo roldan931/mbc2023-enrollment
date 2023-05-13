@@ -9,18 +9,17 @@ import Order "mo:base/Order";
 import Bool "mo:base/Bool";
 import Hash "mo:base/Hash";
 
-type Content = {
-    #Text : Text;
-    #Image : Blob;
-    #Video : Blob;
-};
-type Message = {
-    vote : Int;
-    content : Content;
-    creator : Principal;
-};
-
 actor StudentWall {
+    type Content = {
+        #Text : Text;
+        #Image : Blob;
+        #Video : Blob;
+    };
+    type Message = {
+        vote : Int;
+        content : Content;
+        creator : Principal;
+    };
     var messageId = 0;
     let wall = HashMap.HashMap<Nat, Message>(1, Nat.equal, Hash.hash);
 
