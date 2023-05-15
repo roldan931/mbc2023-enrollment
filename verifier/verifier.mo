@@ -4,32 +4,63 @@ import Text "mo:base/Text";
 import Principal "mo:base/Principal";
 import HashMap "mo:base/HashMap";
 import Array "mo:base/Array";
-import ic "ic";
-import calcu "../calculator";
+import Nat "mo:base/Nat";
+import Blob "mo:base/Blob";
+import Iter "mo:base/Iter";
+import Buffer "mo:base/Buffer";
+import Error "mo:base/Error";
+import ICType "ic";
+import CalType "calculator";
 actor Verifier {
     public type StudentProfile = {
         name : Text;
-        Team : Text;
+        team : Text;
         graduate : Bool;
     };
-    let studentProfileStore = HashMap.HashMap<Principal, StudentProfile>(1, Principal.equal, Principal.hash);
-    let invoiceManagementCanister : ic.ManagementCanister = actor ("2222s-4iaaa-aaaaf-ax2uq-cai");
-    let invoiceCalculator : calcu.Calculator = actor (calcu.Calculator);
+    let studentProfileStore = HashMap.HashMap<Principal, StudentProfile>(0, Principal.equal, Principal.hash);
 
     public shared ({ caller }) func addMyProfile(profile : StudentProfile) : async Result.Result<(), Text> {
-        studentProfileStore.put(caller, profile);
-        #ok();
+        if (Principal.isAnonymous(caller)) {
+            return #err "You must be Logged In";
+        };
+
+        let student = studentProfileStore.get(caller);
+        switch (student) {
+            case (null) {
+                studentProfileStore.put(caller, profile);
+                #ok();
+            };
+            case (?value) {
+                #err("Student found");
+            };
+        };
     };
 
-    public query func seeAProfile(p : Principal) : async ?StudentProfile {
-        return studentProfileStore.get(p);
+    public query ({ caller }) func seeAProfile(p : Principal) : async Result.Result<StudentProfile, Text> {
+        if (Principal.isAnonymous(caller)) {
+            return #err "You must be Logged In";
+        };
+
+        let student = studentProfileStore.get(p);
+        switch (student) {
+            case (?value) {
+                #ok(value);
+            };
+            case (null) {
+                #err("Student not found");
+            };
+        };
     };
 
     public shared ({ caller }) func updateMyProfile(profile : StudentProfile) : async Result.Result<(), Text> {
+        if (Principal.isAnonymous(caller)) {
+            return #err "You must be Logged In";
+        };
+
         let student = studentProfileStore.get(caller);
         switch (student) {
             case (?value) {
-                studentProfileStore.put(caller, profile);
+                ignore studentProfileStore.replace(caller, profile);
                 #ok();
             };
             case (null) {
@@ -39,6 +70,10 @@ actor Verifier {
     };
 
     public shared ({ caller }) func deleteMyProfile(profile : StudentProfile) : async Result.Result<(), Text> {
+        if (Principal.isAnonymous(caller)) {
+            return #err "You must be Logged In";
+        };
+
         let student = studentProfileStore.get(caller);
         switch (student) {
             case (?value) {
@@ -57,54 +92,102 @@ actor Verifier {
         #UnexpectedValue : Text;
         #UnexpectedError : Text;
     };
-
     public shared func test(canisterId : Principal) : async TestResult {
-        await invoiceCalculator.reset();
-        let num = await invoiceCalculator.add();
-        if (num == 1) {
-            #ok();
-        } else if (num > 1) {
-            #UnexpectedValue "2";
-        } else {
-            UnexpectedError "1";
+        try {
+            let invoiceCalculator : CalType.CalculatorCanister = actor (Principal.toText(canisterId));
+            let x1 : Int = await invoiceCalculator.reset();
+            if (x1 != 0) {
+                return #err(#UnexpectedValue("For reset, counter should be 0"));
+            };
+
+            let x2 : Int = await invoiceCalculator.add(2);
+            if (x2 != 2) {
+                return #err(#UnexpectedValue("For add, counter should be 2"));
+            };
+
+            let x3 : Int = await invoiceCalculator.sub(2);
+            if (x3 != 0) {
+                return #err(#UnexpectedValue("For sub, counter should be 0"));
+            };
+
+            return #ok();
+
+        } catch (e) {
+            #err(#UnexpectedError "Not method implemented");
         };
     };
 
     //Parte 3
+    let invoiceManagementCanister : ICType.ManagementCanister = actor ("aaaaa-aa");
+
+    public func getCanisterControllers(canisterId : Principal) : async [Principal] {
+        try {
+            let status = await invoiceManagementCanister.canister_status({
+                canister_id = canisterId;
+            });
+            return status.controllers;
+        } catch (e) {
+            return parseControllersFromCanisterStatusErrorIfCallerNotController(Error.message(e));
+        };
+    };
+
+    private func parseControllersFromCanisterStatusErrorIfCallerNotController(errorMessage : Text) : [Principal] {
+        let lines = Iter.toArray(Text.split(errorMessage, #text("\n")));
+        let words = Iter.toArray(Text.split(lines[1], #text(" ")));
+        var i = 2;
+        let controllers = Buffer.Buffer<Principal>(0);
+        while (i < words.size()) {
+            controllers.add(Principal.fromText(words[i]));
+            i += 1;
+        };
+        return Buffer.toArray<Principal>(controllers);
+    };
+
     public shared func verifyOwnership(canisterId : Principal, principalId : Principal) : async Bool {
-        let canister = await invoiceManagementCanister.canister_status(canisterId);
-        let principal = Array.find(canister.settings.controllers, func x = Principal.equal(x, principalId));
-        switch (principal) {
-            case (?value) {
-                return true;
+        try {
+            let canister = await getCanisterControllers(canisterId);
+            let principal = Array.find<Principal>(canister, func x = Principal.equal(x, principalId));
+            switch (principal) {
+                case (?value) {
+                    return true;
+                };
+                case (null) {
+                    return false;
+                };
             };
-            case (null) {
-                return false;
-            };
+        } catch (e) {
+            return false;
         };
     };
 
     //Parte 4
     public shared func verifyWork(canisterId : Principal, principalId : Principal) : async Result.Result<(), Text> {
-        let verify = await verifyOwnership(canisterId, principalId);
-        if (verify) {
-            let student = studentProfileStore.get(canisterId);
+        try {
+            let testResult = await test(canisterId);
+            if (testResult != #ok) {
+                return #err("Test, not #ok");
+            };
+            let verifyOwner = await verifyOwnership(canisterId, principalId);
+            if (not verifyOwner) {
+                return #err("Principal not owner");
+            };
+            var student = studentProfileStore.get(principalId);
             switch (student) {
+                case null {
+                    return #err("Student not found");
+                };
                 case (?value) {
-                    let s : StudentProfile = {
+                    var updatedStudent = {
                         name = value.name;
-                        Team = value.Team;
+                        team = value.team;
                         graduate = true;
                     };
-                    studentProfileStore.put(canisterId, s);
-                    #ok();
-                };
-                case (null) {
-                    #err("Student not found");
+                    ignore studentProfileStore.replace(principalId, updatedStudent);
+                    return #ok();
                 };
             };
-        } else {
-            #err("Student not found");
+        } catch (e) {
+            return #err("verifyWork, error in ejecution");
         };
     };
 };
