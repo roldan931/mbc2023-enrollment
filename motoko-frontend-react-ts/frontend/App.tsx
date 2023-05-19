@@ -11,12 +11,14 @@ import "@connect2ic/core/style.css"
  * Import canister definitions like this:
  */
 import * as counter from "../.dfx/local/canisters/counter"
+import * as studentWall from "../.dfx/local/canisters/student_wall"
 /*
  * Some examples to get you started
  */
 import { Counter } from "./components/Counter"
 import { Transfer } from "./components/Transfer"
 import { Profile } from "./components/Profile"
+import { Wall } from "./components/Wall"
 
 function App() {
   return (
@@ -38,7 +40,7 @@ function App() {
         Examples
       </p>
       <div className="examples">
-        <Counter />
+        <Wall />
         <Profile />
         <Transfer />
       </div>
@@ -49,6 +51,7 @@ function App() {
 const client = createClient({
   canisters: {
     counter,
+    student_Wall: studentWall
   },
   providers: defaultProviders,
   globalProviderConfig: {

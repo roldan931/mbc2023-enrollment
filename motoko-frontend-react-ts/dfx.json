@@ -4,9 +4,14 @@
       "main": "canisters/counter/main.mo",
       "type": "motoko"
     },
+    "student_wall": {
+      "main": "canisters/student_wall.mo",
+      "type": "motoko"
+    },
     "assets": {
       "dependencies": [
-        "counter"
+        "counter",
+        "student_wall"
       ],
       "frontend": {
         "entrypoint": "dist/index.html"
