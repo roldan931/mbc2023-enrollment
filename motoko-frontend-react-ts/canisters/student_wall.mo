@@ -13,26 +13,28 @@ actor StudentWall {
     type Content = {
         #Text : Text;
         #Image : Blob;
-        #Video : Blob;
+        #Video : Blob
     };
     type Message = {
+        messageId : Nat;
         vote : Int;
         content : Content;
-        creator : Principal;
+        creator : Principal
     };
     var messageId = 0;
     let wall = HashMap.HashMap<Nat, Message>(1, Nat.equal, Hash.hash);
 
     // Add a new message to the wall
     public shared ({ caller }) func writeMessage(c : Content) : async Nat {
+        messageId := messageId +1;
         let message : Message = {
+            messageId = messageId;
             vote = 0;
             content = c;
-            creator = caller;
+            creator = caller
         };
-        messageId := messageId +1;
         wall.put(messageId, message);
-        return messageId;
+        return messageId
     };
 
     //Get a specific message by ID
@@ -40,12 +42,12 @@ actor StudentWall {
         let message = wall.get(messageId);
         switch (message) {
             case (?m) {
-                #ok(m);
+                #ok(m)
             };
             case (null) {
-                #err("MessageId Invalid");
-            };
-        };
+                #err("MessageId Invalid")
+            }
+        }
     };
 
     // Update the content for a specific message by ID
@@ -55,21 +57,22 @@ actor StudentWall {
             case (?m) {
                 if (Principal.equal(m.creator, caller)) {
                     let ms : Message = {
+                        messageId = m.messageId;
                         vote = m.vote;
                         content = c;
-                        creator = m.creator;
+                        creator = m.creator
                     };
                     wall.put(messageId, ms);
-                    #ok();
+                    #ok()
                 } else {
-                    #err("MessageId Invalid");
+                    #err("MessageId Invalid")
                 };
 
             };
             case (null) {
-                #err("MessageId Invalid");
-            };
-        };
+                #err("MessageId Invalid")
+            }
+        }
     };
 
     //Delete a specific message by ID
@@ -77,12 +80,12 @@ actor StudentWall {
         let message = wall.remove(messageId);
         switch (message) {
             case (?m) {
-                #ok();
+                #ok()
             };
             case (null) {
-                #err("MessageId Invalid");
-            };
-        };
+                #err("MessageId Invalid")
+            }
+        }
     };
 
     // Voting
@@ -91,49 +94,51 @@ actor StudentWall {
         switch (message) {
             case (?m) {
                 let ms : Message = {
+                    messageId = m.messageId;
                     vote = m.vote +1;
                     content = m.content;
-                    creator = m.creator;
+                    creator = m.creator
                 };
                 wall.put(messageId, ms);
                 #ok()
 
             };
             case (null) {
-                #err("MessageId Invalid");
-            };
-        };
+                #err("MessageId Invalid")
+            }
+        }
     };
     public shared func downVote(messageId : Nat) : async Result.Result<(), Text> {
         let message = wall.get(messageId);
         switch (message) {
             case (?m) {
                 let ms : Message = {
+                    messageId = m.messageId;
                     vote = m.vote -1;
                     content = m.content;
-                    creator = m.creator;
+                    creator = m.creator
                 };
                 wall.put(messageId, ms);
                 #ok()
 
             };
             case (null) {
-                #err("MessageId Invalid");
-            };
-        };
+                #err("MessageId Invalid")
+            }
+        }
     };
 
     //Get all messages
     public shared query func getAllMessages() : async [Message] {
-        return Iter.toArray<Message>(wall.vals());
+        return Iter.toArray<Message>(wall.vals())
     };
 
     //Get all messages
     public shared query func getAllMessagesRanked() : async [Message] {
         func compareMessage(m1 : Message, m2 : Message) : Order.Order {
-            return Int.compare(m1.vote, m2.vote);
+            return Int.compare(m1.vote, m2.vote)
         };
         let values = Iter.sort<Message>(wall.vals(), compareMessage);
-        return Iter.toArray<Message>(values);
-    };
-};
+        return Iter.toArray<Message>(values)
+    }
+}

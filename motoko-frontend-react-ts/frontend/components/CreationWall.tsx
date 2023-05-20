@@ -6,7 +6,7 @@ const CreationWall = () => {
 
   const { isConnected } = useConnect()
   const [studentWall] = useCanister("student_wall")
-  const [text, setText] = useState("Your name here!")
+  const [text, setText] = useState<string>()
   const [image, setImage] = useState<Blob>()
   const [video, setVideo] = useState<Blob>()
 
@@ -37,17 +37,17 @@ const CreationWall = () => {
         <form>
           <div>
             <label htmlFor="inpText">Text</label>
-            <input id="inpText" type="text" value={text} onChange={(event) => setText(event.target.value)} />
+            <input id="inpText" type="text" value={text} onChange={(event) => setText(event.target.value)} placeholder="Your name here!" />
           </div>
           <div>
             <label htmlFor="inpImage">Image</label>
-            <input id="inpImage" type="file" onChange={changeImageFile} />
+            <input id="inpImage" type="file" accept="image/*" onChange={changeImageFile} />
           </div>
           <div>
             <label htmlFor="inpVideo">Video</label>
-            <input id="inpVideo" type="file" onChange={changeVideoFile} />
+            <input id="inpVideo" type="file" accept="video/mp4,video/x-m4v,video/*" onChange={changeVideoFile} />
           </div>
-          <button className="connect-button" onClick={onCreationWall}>Publish</button>
+          <button className="connect-button" onClick={onCreationWall}>Publish Wall</button>
         </form>
       ) : (
         <p className="example-disabled">Connect with a wallet to access this creation wall</p>

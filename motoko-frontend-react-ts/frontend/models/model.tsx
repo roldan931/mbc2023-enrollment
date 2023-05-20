@@ -1,4 +1,5 @@
 export interface Message {
+    messageId: number;
     vote: number;
     content: ContentMessage;
     creator: string;

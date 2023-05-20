@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react"
-import { useBalance, useCanister, useConnect } from "@connect2ic/react"
+import { useCanister, useConnect } from "@connect2ic/react"
 import { Message } from "frontend/models/model"
+import { VoteWall } from "./VoteWall"
+import { ShowImageWall } from "./ShowImageWall"
+import { ShowVideoWall } from "./ShowVideoWall"
 
 const Wall = () => {
 
@@ -22,29 +25,59 @@ const Wall = () => {
 
   return (
     <div>
-      <p>Wallet address: <span style={{ fontSize: "0.7em" }}>{principal ? principal : "-"}</span></p>
+      <p>Wallet address: <span style={{ fontSize: "0.7em" }}>{isConnected ? principal : "-"}</span></p>
       <table>
         <tbody>
           {messages && messages.map(message => (
-            <tr key={message.creator}>
+            <tr key={message.messageId}>
+              {
+                message.content.image ? (
+                  <td>
+                    <ShowImageWall file={message.content.image} />
+                  </td>
+                ) : (
+                  <></>
+                )
+              }
+              {
+                message.content.video ? (
+                  <td>
+                    <ShowVideoWall file={message.content.video} />
+                  </td>
+                ) : (
+                  <></>
+                )
+              }
               <td>
                 {message.content.text}
               </td>
               <td>
                 {message.vote}
               </td>
-              {isConnected ? (
-                <td>
-                  <button>Votar</button>
-                </td>
-              ) : (
-                <></>
-              )}
+              {
+                isConnected ? (
+                  <td>
+                    <VoteWall messageId={message.messageId} />
+                  </td>
+                ) : (
+                  <></>
+                )
+              }
+              {
+                message.creator == principal ? (
+                  <td>
+                    <button className="connect-button">Delete</button>
+                    <button className="connect-button">Update</button>
+                  </td>
+                ) : (
+                  <></>
+                )
+              }
             </tr>
           ))}
         </tbody>
-      </table>
-    </div>
+      </table >
+    </div >
   )
 }
 
