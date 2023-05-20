@@ -1,10 +1,10 @@
 export interface Message {
     vote: number;
-    content: Content;
+    content: ContentMessage;
     creator: string;
 }
 
-export interface Content {
+export interface ContentMessage {
     text: string;
     image: Blob;
     video: Blob;

@@ -41,8 +41,6 @@ function App() {
       </p>
       <div className="examples">
         <Wall />
-        <Profile />
-        <Transfer />
       </div>
     </div>
   )
