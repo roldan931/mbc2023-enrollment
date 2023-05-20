@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useState } from "react"
 import logo from "./assets/dfinity.svg"
 /*
  * Connect2ic provides essential utilities for IC app development
@@ -15,13 +15,16 @@ import * as studentWall from "../.dfx/local/canisters/student_wall"
 /*
  * Some examples to get you started
  */
-import { Counter } from "./components/Counter"
-import { Transfer } from "./components/Transfer"
-import { Profile } from "./components/Profile"
-import { Wall } from "./components/Wall"
-import { CreationWall } from "./components/CreationWall"
+import { Wall } from "@component/Wall"
+import { CreationWall } from "@component/CreationWall"
 
 function App() {
+  const [messageId, setMessageId] = useState<number>()
+
+  const sendMessageId = (id: number) => {
+    setMessageId(id)
+  }
+
   return (
     <div className="App">
       <div className="auth-section">
@@ -41,8 +44,8 @@ function App() {
         Examples
       </p>
       <div className="examples">
-        <CreationWall />
-        <Wall />
+        <CreationWall messageId={messageId} />
+        <Wall sendMessageId={sendMessageId} />
       </div>
     </div>
   )

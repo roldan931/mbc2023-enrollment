@@ -1,11 +1,16 @@
 import React, { useEffect, useState } from "react"
 import { useCanister, useConnect } from "@connect2ic/react"
-import { Message } from "frontend/models/model"
-import { VoteWall } from "./VoteWall"
-import { ShowImageWall } from "./ShowImageWall"
-import { ShowVideoWall } from "./ShowVideoWall"
+import { Message } from "@model/model"
+import { VoteWall } from "@component/VoteWall"
+import { ShowImageWall } from "@component/ShowImageWall"
+import { ShowVideoWall } from "@component/ShowVideoWall"
+import { DeleteWall } from "@component/DeleteWall"
 
-const Wall = () => {
+export interface WallProps {
+  sendMessageId: (id: number) => void;
+}
+
+const Wall = (props: WallProps) => {
 
   const { isConnected, principal } = useConnect()
   const [studentWall] = useCanister("student_wall")
@@ -66,8 +71,8 @@ const Wall = () => {
               {
                 message.creator == principal ? (
                   <td>
-                    <button className="connect-button">Delete</button>
-                    <button className="connect-button">Update</button>
+                    <DeleteWall messageId={message.messageId} />
+                    <button className="connect-button" onClick={() => props.sendMessageId(message.messageId)}>Update</button>
                   </td>
                 ) : (
                   <></>

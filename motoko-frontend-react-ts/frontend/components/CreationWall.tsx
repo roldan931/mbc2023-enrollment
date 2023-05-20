@@ -1,14 +1,28 @@
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import { useConnect, useCanister } from "@connect2ic/react"
-import { ContentMessage } from "frontend/models/model"
+import { ContentMessage, Message } from "@model/model"
+import { UpdateWall } from "@component/UpdateWall"
 
-const CreationWall = () => {
+export interface CreationWallProps {
+  messageId?: number;
+}
+
+const CreationWall = (props: CreationWallProps) => {
 
   const { isConnected } = useConnect()
   const [studentWall] = useCanister("student_wall")
   const [text, setText] = useState<string>()
   const [image, setImage] = useState<Blob>()
   const [video, setVideo] = useState<Blob>()
+  const [messageId, setMessageId] = useState<number>()
+
+  const getMessage = async () => {
+    const message = await studentWall.getMessage(props.messageId) as Message
+    setText(message.content.text)
+    setImage(message.content.image)
+    setVideo(message.content.video)
+    setMessageId(message.messageId)
+  }
 
   const onCreationWall = async () => {
     let content: ContentMessage = {
@@ -31,24 +45,47 @@ const CreationWall = () => {
     setVideo(videoBlob)
   }
 
+  useEffect(() => {
+    if (!props.messageId) {
+      return
+    }
+    getMessage()
+  }, [props.messageId])
+
   return (
     <div className="example">
       {isConnected ? (
-        <form>
-          <div>
-            <label htmlFor="inpText">Text</label>
-            <input id="inpText" type="text" value={text} onChange={(event) => setText(event.target.value)} placeholder="Your name here!" />
-          </div>
-          <div>
-            <label htmlFor="inpImage">Image</label>
-            <input id="inpImage" type="file" accept="image/*" onChange={changeImageFile} />
-          </div>
-          <div>
-            <label htmlFor="inpVideo">Video</label>
-            <input id="inpVideo" type="file" accept="video/mp4,video/x-m4v,video/*" onChange={changeVideoFile} />
-          </div>
-          <button className="connect-button" onClick={onCreationWall}>Publish Wall</button>
-        </form>
+        <>
+          {
+            messageId ? (
+              <h3>Message Id: {messageId}</h3>
+            ) : (
+              <></>
+            )
+          }
+          <form>
+            <div>
+              <label htmlFor="inpText">Text</label>
+              <input id="inpText" type="text" value={text} onChange={(event) => setText(event.target.value)} placeholder="Your name here!" />
+            </div>
+            <div>
+              <label htmlFor="inpImage">Image</label>
+              <input id="inpImage" type="file" accept="image/*" onChange={changeImageFile} />
+            </div>
+            <div>
+              <label htmlFor="inpVideo">Video</label>
+              <input id="inpVideo" type="file" accept="video/mp4,video/x-m4v,video/*" onChange={changeVideoFile} />
+            </div>
+            {
+              messageId ? (
+                <UpdateWall messageId={messageId} image={image} video={video} text={text} />
+              ) : (
+                <button className="connect-button" onClick={onCreationWall}>Creation Wall</button>
+              )
+            }
+
+          </form>
+        </>
       ) : (
         <p className="example-disabled">Connect with a wallet to access this creation wall</p>
       )}

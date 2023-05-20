@@ -21,7 +21,11 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react",
-    "baseUrl": "."
+    "baseUrl": ".",
+    "paths": {
+      "@component/*": ["./frontend/components/*"],
+      "@model/*": ["./frontend/models/*"]
+    }
   },
   "include": [
     "./frontend"
