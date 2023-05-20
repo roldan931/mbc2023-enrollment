@@ -4,7 +4,7 @@ import { Message } from "frontend/models/model"
 
 const Wall = () => {
 
-  const { isConnected } = useConnect()
+  const { isConnected, principal } = useConnect()
   const [studentWall] = useCanister("student_wall")
   const [messages, setMessages] = useState<Array<Message>>()
   const [wallet] = useWallet()
@@ -23,7 +23,7 @@ const Wall = () => {
 
   return (
     <div>
-      <p>Wallet address: <span style={{ fontSize: "0.7em" }}>{wallet ? wallet.principal : "-"}</span></p>
+      <p>Wallet address: <span style={{ fontSize: "0.7em" }}>{principal ? principal : "-"}</span></p>
       <table>
         <tbody>
           {messages && messages.map(message => (
