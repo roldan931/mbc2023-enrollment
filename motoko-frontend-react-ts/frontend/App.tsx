@@ -19,6 +19,7 @@ import { Counter } from "./components/Counter"
 import { Transfer } from "./components/Transfer"
 import { Profile } from "./components/Profile"
 import { Wall } from "./components/Wall"
+import { CreationWall } from "./components/CreationWall"
 
 function App() {
   return (
@@ -40,6 +41,7 @@ function App() {
         Examples
       </p>
       <div className="examples">
+        <CreationWall />
         <Wall />
       </div>
     </div>

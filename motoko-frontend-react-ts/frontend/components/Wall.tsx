@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react"
-import { useBalance, useCanister, useConnect, useWallet } from "@connect2ic/react"
+import { useBalance, useCanister, useConnect } from "@connect2ic/react"
 import { Message } from "frontend/models/model"
 
 const Wall = () => {
@@ -7,7 +7,6 @@ const Wall = () => {
   const { isConnected, principal } = useConnect()
   const [studentWall] = useCanister("student_wall")
   const [messages, setMessages] = useState<Array<Message>>()
-  const [wallet] = useWallet()
 
   const getAllMessages = async () => {
     const allMessages = await studentWall.getAllMessages() as Array<Message>
