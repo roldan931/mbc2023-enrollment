@@ -10,19 +10,10 @@ export interface CreationWallProps {
 const CreationWall = (props: CreationWallProps) => {
 
   const { isConnected } = useConnect()
-  const [studentWall] = useCanister("student_wall")
+  const [studentWall, { loading, error }] = useCanister("student_wall")
   const [text, setText] = useState<string>()
   const [image, setImage] = useState<Blob>()
   const [video, setVideo] = useState<Blob>()
-  const [messageId, setMessageId] = useState<number>()
-
-  const getMessage = async () => {
-    const message = await studentWall.getMessage(props.messageId) as Message
-    setText(message.content.text)
-    setImage(message.content.image)
-    setVideo(message.content.video)
-    setMessageId(message.messageId)
-  }
 
   const onCreationWall = async () => {
     let content: ContentMessage = {
@@ -34,36 +25,29 @@ const CreationWall = (props: CreationWallProps) => {
   }
 
   const changeImageFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const fileToBlob = async (file) => new Blob([new Uint8Array(await file.arrayBuffer())], { type: file.type });
-    const imageBlob = await fileToBlob(event.target.value);
+    const fileToBlob = async (file: File) => new Blob([new Uint8Array(await file.arrayBuffer())], { type: file.type });
+    const imageBlob = await fileToBlob(event.target.files[0]);
     setImage(imageBlob)
   }
 
   const changeVideoFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const fileToBlob = async (file) => new Blob([new Uint8Array(await file.arrayBuffer())], { type: file.type });
-    const videoBlob = await fileToBlob(event.target.value);
+    const videoBlob = await fileToBlob(event.target.files[0]);
     setVideo(videoBlob)
   }
 
-  useEffect(() => {
-    if (!props.messageId) {
-      return
-    }
-    getMessage()
-  }, [props.messageId])
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    await onCreationWall();
+  }
 
   return (
     <div className="example">
       {isConnected ? (
         <>
-          {
-            messageId ? (
-              <h3>Message Id: {messageId}</h3>
-            ) : (
-              <></>
-            )
-          }
-          <form>
+        <h1>{ error }</h1>
+        <h1>{ loading }</h1>
+          <form onSubmit={handleSubmit}>
             <div>
               <label htmlFor="inpText">Text</label>
               <input id="inpText" type="text" value={text} onChange={(event) => setText(event.target.value)} placeholder="Your name here!" />
@@ -76,14 +60,7 @@ const CreationWall = (props: CreationWallProps) => {
               <label htmlFor="inpVideo">Video</label>
               <input id="inpVideo" type="file" accept="video/mp4,video/x-m4v,video/*" onChange={changeVideoFile} />
             </div>
-            {
-              messageId ? (
-                <UpdateWall messageId={messageId} image={image} video={video} text={text} />
-              ) : (
-                <button className="connect-button" onClick={onCreationWall}>Creation Wall</button>
-              )
-            }
-
+            <input className="connect-button" type="submit" value="Creation Wall" />
           </form>
         </>
       ) : (

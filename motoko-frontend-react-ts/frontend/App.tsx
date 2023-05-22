@@ -10,13 +10,13 @@ import "@connect2ic/core/style.css"
 /*
  * Import canister definitions like this:
  */
-import * as counter from "../.dfx/local/canisters/counter"
-import * as studentWall from "../.dfx/local/canisters/student_wall"
+import * as student_Wall from "@ic/student_wall"
 /*
  * Some examples to get you started
  */
 import { Wall } from "@component/Wall"
 import { CreationWall } from "@component/CreationWall"
+import { UpdateWall } from "@component/UpdateWall"
 
 function App() {
   const [messageId, setMessageId] = useState<number>()
@@ -44,7 +44,13 @@ function App() {
         Examples
       </p>
       <div className="examples">
-        <CreationWall messageId={messageId} />
+        {
+          messageId ? (
+            <UpdateWall messageId={messageId} />
+          ) : (
+            <CreationWall />
+          )
+        }
         <Wall sendMessageId={sendMessageId} />
       </div>
     </div>
@@ -53,8 +59,7 @@ function App() {
 
 const client = createClient({
   canisters: {
-    counter,
-    student_Wall: studentWall
+    student_Wall
   },
   providers: defaultProviders,
   globalProviderConfig: {

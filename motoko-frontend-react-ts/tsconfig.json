@@ -24,7 +24,8 @@
     "baseUrl": ".",
     "paths": {
       "@component/*": ["./frontend/components/*"],
-      "@model/*": ["./frontend/models/*"]
+      "@model/*": ["./frontend/models/*"],
+      "@ic/*": ["./src/declarations/*"]
     }
   },
   "include": [

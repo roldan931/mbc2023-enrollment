@@ -13,7 +13,7 @@ export interface WallProps {
 const Wall = (props: WallProps) => {
 
   const { isConnected, principal } = useConnect()
-  const [studentWall] = useCanister("student_wall")
+  const [studentWall] = useCanister("student_wall", { mode: "anonymous" })
   const [messages, setMessages] = useState<Array<Message>>()
 
   const getAllMessages = async () => {
